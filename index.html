@@ -1,90 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio - [Your Name]</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML to JSON Transformation with DataWeave</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+        }
+        p {
+            font-size: 16px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-left: 4px solid #ccc;
+            overflow-x: auto;
+        }
+        code {
+            font-family: monospace;
+            background-color: #f9f9f9;
+            padding: 2px 4px;
+        }
+        .hidden {
+            display: none;
+        }
+        #toggleButton {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #toggleButton:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <div class="logo">[Your Name]</div>
-      <ul class="nav-links">
-        <li><a href="#about">About</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#publications">Publications</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
 
-  <section id="hero">
-    <div class="hero-content">
-      <h1>Welcome to My Portfolio</h1>
-      <p>IoT Developer | Researcher | Innovator</p>
-      <a href="#projects" class="cta-btn">Explore My Work</a>
+    <h1>Scenario</h1>
+    <p>You have an XML input representing customer orders. Each order contains a <code>customerId</code>, a list of items, and each item has a <code>name</code>, <code>quantity</code>, and <code>price</code>. Your task is to transform this XML input into a JSON output while calculating the total amount spent by each customer.</p>
+
+    <h2>Input:</h2>
+    <pre><code>&lt;orders&gt;
+  &lt;order&gt;
+    &lt;customerId&gt;123&lt;/customerId&gt;
+    &lt;items&gt;
+      &lt;item&gt;
+        &lt;name&gt;Laptop&lt;/name&gt;
+        &lt;quantity&gt;2&lt;/quantity&gt;
+        &lt;price&gt;1000&lt;/price&gt;
+      &lt;/item&gt;
+      &lt;item&gt;
+        &lt;name&gt;Mouse&lt;/name&gt;
+        &lt;quantity&gt;5&lt;/quantity&gt;
+        &lt;price&gt;20&lt;/price&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/order&gt;
+  &lt;order&gt;
+    &lt;customerId&gt;456&lt;/customerId&gt;
+    &lt;items&gt;
+      &lt;item&gt;
+        &lt;name&gt;Keyboard&lt;/name&gt;
+        &lt;quantity&gt;3&lt;/quantity&gt;
+        &lt;price&gt;50&lt;/price&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/order&gt;
+&lt;/orders&gt;</code></pre>
+
+    <h2>Expected Output:</h2>
+    <pre><code>[
+  {
+    "customerId": 123,
+    "totalSpent": 2100
+  },
+  {
+    "customerId": 456,
+    "totalSpent": 150
+  }
+]</code></pre>
+
+    <h2>Requirements:</h2>
+    <p>For each customer, you need to sum up the total cost of all items (calculated as <code>quantity * price</code>). The output should contain only the <code>customerId</code> and the <code>totalSpent</code> for each order.</p>
+
+    <h2>DataWeave Script:</h2>
+
+    <!-- Hide/unhide button -->
+    <button id="toggleButton" onclick="toggleAnswer()">Show Answer</button>
+
+    <!-- Answer section, hidden by default -->
+    <div id="answerSection" class="hidden">
+        <pre><code>payload mapObject ((value, key, index) -> value) pluck ((value, key, index) -> value) map ((item, index) ->{
+    "customerId":item.customerId,
+    "totalSpent":sum(item.items.*item map ($.price*$.quantity))
+} )</code></pre>
     </div>
-  </section>
 
-  <section id="about">
-    <h2>About Me</h2>
-    <p>
-      I am an experienced IoT developer with expertise in building systems like a cattle monitoring solution, smart greenhouses, and vehicle tracking systems. I am also a researcher, with a published paper in Springer about IoT applications in animal husbandry.
-    </p>
-  </section>
+    <script>
+        function toggleAnswer() {
+            var answerSection = document.getElementById("answerSection");
+            var toggleButton = document.getElementById("toggleButton");
+            
+            if (answerSection.classList.contains("hidden")) {
+                answerSection.classList.remove("hidden");
+                toggleButton.textContent = "Hide Answer";
+            } else {
+                answerSection.classList.add("hidden");
+                toggleButton.textContent = "Show Answer";
+            }
+        }
+    </script>
 
-  <section id="projects">
-    <h2>Projects</h2>
-    <div class="projects-grid">
-      <div class="project-card">
-        <h3>Cattle Monitoring System</h3>
-        <p>Monitoring health and location of livestock using IoT sensors.</p>
-      </div>
-      <div class="project-card">
-        <h3>Smart Greenhouse</h3>
-        <p>Automated control of environmental conditions for optimal plant growth.</p>
-      </div>
-      <div class="project-card">
-        <h3>Vehicle Tracking System</h3>
-        <p>Real-time tracking and accident detection using GPS and sensors.</p>
-      </div>
-      <div class="project-card">
-        <h3>Currency Note Classification</h3>
-        <p>AI-based classification of Indian currency notes using MobileNetV2.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="publications">
-    <h2>Publications</h2>
-    <ul>
-      <li>
-        <a href="https://link.springer.com">Cattle Monitoring System: An IoT Approach</a> - Springer, 2024
-      </li>
-    </ul>
-  </section>
-
-  <section id="contact">
-    <h2>Contact Me</h2>
-    <form>
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required>
-      
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
-      
-      <label for="message">Message:</label>
-      <textarea id="message" name="message" rows="5" required></textarea>
-      
-      <button type="submit">Send Message</button>
-    </form>
-  </section>
-
-  <footer>
-    <p>&copy; 2024 [Your Name]. All Rights Reserved.</p>
-  </footer>
-
-  <script src="script.js"></script>
 </body>
 </html>

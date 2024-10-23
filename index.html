@@ -211,6 +211,54 @@ payload.students map ((item, index) -> {
 })</code></pre>
 </div>
 
+<h1>Scenario 5</h1>
+<p>You are given a JSON structure representing students with their grades in different subjects. Your task is to create a new JSON object that categorizes the students based on their performance:</p>
+<ul>
+    <li>If a student's average grade is 85 or higher, they should be categorized as "High Performer."</li>
+    <li>If their average grade is between 70 and 84, they should be categorized as "Average Performer."</li>
+    <li>If their average grade is below 70, they should be categorized as "Low Performer."</li>
+</ul>
+
+<h2>Input:</h2>
+<pre><code>{
+  "students": [
+    {"id": 1, "name": "Alice", "grades": { "Math": 90, "Science": 85, "English": 80 }},
+    {"id": 2, "name": "Bob", "grades": { "Math": 60, "Science": 65, "English": 70 }},
+    {"id": 3, "name": "Charlie", "grades": { "Math": 75, "Science": 80, "English": 85 }}
+  ]
+}</code></pre>
+
+<h2>Expected Output:</h2>
+<pre><code>{
+  "High Performers": [{ "id": 1, "name": "Alice", "averageGrade": 85 }],
+  "Average Performers": [{ "id": 3, "name": "Charlie", "averageGrade": 80 }],
+  "Low Performers": [{ "id": 2, "name": "Bob", "averageGrade": 65 }]
+}</code></pre>
+
+<h2>Requirements:</h2>
+<p>Calculate each student's average grade. Group the students into categories based on their average grades as described above.</p>
+
+<h2>DataWeave Script:</h2>
+<!-- Hide/unhide button -->
+<button class="toggleButton" id="toggleButton5" onclick="toggleAnswer('answerSection5', 'toggleButton5')">Show Answer</button>
+<!-- Answer section, hidden by default -->
+<div id="answerSection5" class="hidden">
+    <pre><code>%dw 2.0
+var a = payload.students map {
+    id: $.id,
+    name: $.name,
+    averageGrade: avg($.grades pluck $)
+}
+import * from dw::core::Strings
+output application/json
+---
+{
+    "High Performers": a filter ($.averageGrade >= 85),
+    "Average Performers": a filter ($.averageGrade < 85 and $.averageGrade >= 70),
+    "Low Performers": a filter ($.averageGrade < 70)
+}</code></pre>
+</div>
+
 
 
     <script>

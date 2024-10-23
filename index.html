@@ -3,51 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XML to JSON Transformation with DataWeave</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        h2 {
-            color: #555;
-        }
-        p {
-            font-size: 16px;
-        }
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border-left: 4px solid #ccc;
-            overflow-x: auto;
-        }
-        code {
-            font-family: monospace;
-            background-color: #f9f9f9;
-            padding: 2px 4px;
-        }
-        .hidden {
-            display: none;
-        }
-        #toggleButton {
-            margin-top: 10px;
-            padding: 8px 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #toggleButton:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <title>Data Transformation with DataWeave</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS -->
 </head>
 <body>
 
-    <h1>Scenario</h1>
+    <h1>Scenario 1</h1>
     <p>You have an XML input representing customer orders. Each order contains a <code>customerId</code>, a list of items, and each item has a <code>name</code>, <code>quantity</code>, and <code>price</code>. Your task is to transform this XML input into a JSON output while calculating the total amount spent by each customer.</p>
 
     <h2>Input:</h2>
@@ -95,22 +56,71 @@
     <p>For each customer, you need to sum up the total cost of all items (calculated as <code>quantity * price</code>). The output should contain only the <code>customerId</code> and the <code>totalSpent</code> for each order.</p>
 
     <h2>DataWeave Script:</h2>
-
     <!-- Hide/unhide button -->
-    <button id="toggleButton" onclick="toggleAnswer()">Show Answer</button>
-
+    <button id="toggleButton1" onclick="toggleAnswer('answerSection1', 'toggleButton1')">Show Answer</button>
     <!-- Answer section, hidden by default -->
-    <div id="answerSection" class="hidden">
-        <pre><code>payload mapObject ((value, key, index) -> value) pluck ((value, key, index) -> value) map ((item, index) ->{
-    "customerId":item.customerId,
-    "totalSpent":sum(item.items.*item map ($.price*$.quantity))
-} )</code></pre>
+    <div id="answerSection1" class="hidden">
+        <pre><code>%dw 2.0
+output application/json
+var orders = 
+  payload.orders.order map ((order) -> {
+    customerId: order.customerId as Number,
+    totalSpent: order.items.item map ((item) -> 
+      (item.quantity as Number) * (item.price as Number)
+    ) reduce ((total, current) -> total + current)
+  })
+---
+orders</code></pre>
+    </div>
+
+    <h1>Scenario 2</h1>
+    <p>You receive a CSV file with sales transactions, and each row represents a transaction with fields: <code>transactionId</code>, <code>productId</code>, <code>quantity</code>, and <code>unitPrice</code>. Your task is to transform the CSV into a JSON output that groups the transactions by <code>productId</code> and calculates the total sales (sum of quantity * unitPrice) for each product.</p>
+
+    <h2>Input (CSV):</h2>
+    <pre><code>transactionId,productId,quantity,unitPrice
+1,101,5,20
+2,102,3,30
+3,101,2,20
+4,103,1,50
+5,102,7,20</code></pre>
+
+    <h2>Expected Output (JSON):</h2>
+    <pre><code>[
+  {
+    "productId": 101,
+    "totalSales": 70
+  },
+  {
+    "productId": 102,
+    "totalSales": 200
+  },
+  {
+    "productId": 103,
+    "totalSales": 50
+  }
+]</code></pre>
+
+    <h2>Requirements:</h2>
+    <p>Group transactions by <code>productId</code>. For each product, calculate the total sales as the sum of <code>quantity * unitPrice</code>.</p>
+
+    <h2>DataWeave Script:</h2>
+    <!-- Hide/unhide button -->
+    <button id="toggleButton2" onclick="toggleAnswer('answerSection2', 'toggleButton2')">Show Answer</button>
+    <!-- Answer section, hidden by default -->
+    <div id="answerSection2" class="hidden">
+        <pre><code>%dw 2.0
+output application/json
+---
+payload groupBy ($.productId) pluck ((value, key, index) -> {
+    "productId": value.productId reduce ($),
+    "totalSales": sum((value.unitPrice) map $ * value.quantity[$$])
+})</code></pre>
     </div>
 
     <script>
-        function toggleAnswer() {
-            var answerSection = document.getElementById("answerSection");
-            var toggleButton = document.getElementById("toggleButton");
+        function toggleAnswer(answerId, buttonId) {
+            var answerSection = document.getElementById(answerId);
+            var toggleButton = document.getElementById(buttonId);
             
             if (answerSection.classList.contains("hidden")) {
                 answerSection.classList.remove("hidden");

@@ -62,15 +62,11 @@
     <div id="answerSection1" class="hidden">
         <pre><code>%dw 2.0
 output application/json
-var orders = 
-  payload.orders.order map ((order) -> {
-    customerId: order.customerId as Number,
-    totalSpent: order.items.item map ((item) -> 
-      (item.quantity as Number) * (item.price as Number)
-    ) reduce ((total, current) -> total + current)
-  })
 ---
-orders</code></pre>
+payload mapObject ((value, key, index) -> value) pluck ((value, key, index) -> value) map ((item, index) ->{
+    "customerId":item.customerId,
+    "totalSpent":sum(item.items.*item map ($.price*$.quantity))
+} )</code></pre>
     </div>
 
     <h1>Scenario 2</h1>

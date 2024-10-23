@@ -117,6 +117,51 @@ payload groupBy ($.productId) pluck ((value, key, index) -> {
 })</code></pre>
     </div>
 
+    <h1>Scenario 3</h1>
+<p>You have a nested JSON structure representing different departments within a company, and each department has employees with their respective <code>id</code>, <code>name</code>, and <code>salary</code>. Your task is to transform this input into a flat JSON array that lists each employee, along with their department and total salary after applying a 10% bonus.</p>
+
+<h2>Input:</h2>
+<pre><code>{"departments": [
+  {"departmentName": "Engineering",
+   "employees": [
+     { "id": 1, "name": "Alice", "salary": 1000 },
+     { "id": 2, "name": "Bob", "salary": 1200 }
+   ]},
+  {"departmentName": "HR",
+   "employees": [
+     { "id": 3, "name": "Charlie", "salary": 900 }
+   ]}
+]}</code></pre>
+
+<h2>Expected Output:</h2>
+<pre><code>[
+  {"id": 1,"name": "Alice","department": "Engineering","totalSalary": 1100},
+  {"id": 2,"name": "Bob","department": "Engineering","totalSalary": 1320},
+  {"id": 3,"name": "Charlie","department": "HR","totalSalary": 990}
+]</code></pre>
+
+<h2>Requirements:</h2>
+<p>Flatten the structure to list each employee with their <code>id</code>, <code>name</code>, and <code>department</code>. Calculate the <code>totalSalary</code> by adding a 10% bonus to the base salary.</p>
+
+<h2>DataWeave Script:</h2>
+<!-- Hide/unhide button -->
+<button class="toggleButton" id="toggleButton3" onclick="toggleAnswer('answerSection3', 'toggleButton3')">Show Answer</button>
+<!-- Answer section, hidden by default -->
+<div id="answerSection3" class="hidden">
+    <pre><code>%dw 2.0
+output application/json
+---
+payload.departments flatMap ((dept, index) ->
+dept.employees map ((emp, index) -> {
+    id : emp.id,
+    name : emp.name,
+    department : dept.departmentName,
+    totalSalary : emp.salary + (emp.salary * 0.10)
+})
+)</code></pre>
+</div>
+
+
     <script>
         function toggleAnswer(answerId, buttonId) {
             var answerSection = document.getElementById(answerId);
